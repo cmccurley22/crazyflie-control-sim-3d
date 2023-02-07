@@ -64,6 +64,7 @@ class TrajPoint:
     x_pos:  float = 0.0
     y_pos:  float = 0.0
     z_pos:  float = 0.0
+    p:      float = 0.0
     psi:    float = 0.0
     x_vel:  float = 0.0
     y_vel:  float = 0.0
@@ -73,6 +74,9 @@ class TrajPoint:
     y_acc:  float = 0.0
     z_acc:  float = 0.0
     r_dot:  float = 0.0
+    theta:  float = 0.0
+    phi:    float = 0.0
+    q:      float = 0.0
 
 
 @dataclass
