@@ -29,6 +29,8 @@ class Controller3D():
 
         # translational
 
+        # U1: z
+
         e_pos_z = setpoint.z_pos - state.z_pos
         e_vel_z = setpoint.z_vel - state.z_vel
 
@@ -37,11 +39,27 @@ class Controller3D():
         U1 = self.params.mass * a_z
         U[0] = U1
 
+        # x and y
+        e_pos_x = setpoint.x_pos - state.x_pos
+        e_vel_x = setpoint.x_vel - state.x_vel
+
+        e_pos_y = setpoint.y_pos - state.y_pos
+        e_vel_y = setpoint.y_vel - state.y_vel
+
+        a_x = self.pid_gains["kp_x"] * e_pos_x + self.pid_gains["kd_x"] * e_vel_x
+        a_y = self.pid_gains["kp_y"] * e_pos_y + self.pid_gains["kd_y"] * e_vel_y
+
         # rotational
 
         e_p = setpoint.p - state.p
         e_q = setpoint.q - state.q
         e_r = setpoint.r - state.r
+
+        phi_d = (1 / self.params.g) * \
+            (a_x * sin(state.phi) - a_y * cos(state.phi))
+        theta_d = (1 / self.params.g) * \
+            (a_x * cos(state.theta) + a_y * sin(state.theta))
+        # psi_d what the fuck?
 
         e_phi = setpoint.phi - state.phi
         e_theta = setpoint.theta - state.theta
