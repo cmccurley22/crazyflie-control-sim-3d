@@ -13,8 +13,10 @@ class Controller3D():
         - cfparams (CrazyflieParams dataclass):     model parameter class for the crazyflie
         - pid_gains (PIDGains dataclass):           pid gain class
         """
+
         self.params = cfparams
         self.pid_gains = pid_gains
+        self.last_psi = 0
 
 
     def compute_commands(self, setpoint, state):
@@ -34,9 +36,9 @@ class Controller3D():
         e_pos_z = setpoint.z_pos - state.z_pos
         e_vel_z = setpoint.z_vel - state.z_vel
 
-        a_z = self.pid_gains["kp_z"] * e_pos_z + self.pid_gains["kd_z"] * e_vel_z + self.params.g
+        a_z = self.pid_gains["kp_z"] * e_pos_z + self.pid_gains["kd_z"] * e_vel_z
 
-        U1 = self.params.mass * a_z
+        U1 = self.params.mass * (a_z + self.params.g)
         U[0] = U1
 
         # x and y
@@ -49,6 +51,9 @@ class Controller3D():
         a_x = self.pid_gains["kp_x"] * e_pos_x + self.pid_gains["kd_x"] * e_vel_x
         a_y = self.pid_gains["kp_y"] * e_pos_y + self.pid_gains["kd_y"] * e_vel_y
 
+        # a_x = self.params.g * (state.theta * cos(self.last_psi) + state.phi * sin(self.last_psi))
+        # a_y = self.params.g * (state.theta * sin(self.last_psi) - state.phi * cos(self.last_psi))
+
         # rotational
 
         e_p = setpoint.p - state.p
@@ -56,14 +61,14 @@ class Controller3D():
         e_r = setpoint.r - state.r
 
         phi_d = (1 / self.params.g) * \
-            (a_x * sin(state.phi) - a_y * cos(state.phi))
+            (a_x * sin(setpoint.psi) - a_y * cos(setpoint.psi))
         theta_d = (1 / self.params.g) * \
-            (a_x * cos(state.theta) + a_y * sin(state.theta))
-        # psi_d what the fuck?
+            (a_x * cos(setpoint.psi) + a_y * sin(setpoint.psi))
+        psi_d = setpoint.psi
 
-        e_phi = setpoint.phi - state.phi
-        e_theta = setpoint.theta - state.theta
-        e_psi = setpoint.psi - state.psi
+        e_phi = phi_d - state.phi
+        e_theta = theta_d - state.theta
+        e_psi = psi_d - state.psi
 
         U2 = self.pid_gains["kd_p"] * e_p + self.pid_gains["kp_phi"] * e_phi
         U3 = self.pid_gains["kd_q"] * e_q + self.pid_gains["kp_theta"] * e_theta
@@ -72,5 +77,8 @@ class Controller3D():
         U[1] = U2
         U[2] = U3
         U[3] = U4
+
+        self.last_psi = state.psi
+
 
         return U
