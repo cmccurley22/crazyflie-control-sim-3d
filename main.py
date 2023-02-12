@@ -74,14 +74,15 @@ def run_sim(args, waypoints):
 
             # -------------- (THINK &) ACT -----------------------------------
             # compute thrust (i.e. u)
-            if loop_num == 0:
+            U = controller.compute_commands(set_point, state)
+            # if loop_num == 0:
                 
-                U = controller.compute_commands(set_point, state)
-            else:
-                U = controller.compute_commands(set_point, state, True, False, True)
-            loop_num += 1
-            if loop_num > 10:
-                loop_num = 0
+            #     U = controller.compute_commands(set_point, state)
+            # else:
+            #     U = controller.compute_commands(set_point, state, True, False, True)
+            # loop_num += 1
+            # if loop_num > 5:
+            #     loop_num = 0
             # ----------------------------------------------------------------
 
             # advance state using dynamics

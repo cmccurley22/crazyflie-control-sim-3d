@@ -1,15 +1,15 @@
 # translational 
-kp_x: 0.01
-kp_y: 0.01
+kp_x: 0.001
+kp_y: 0.001
 kp_z: 50
 #-----
 ki_x: 0
 ki_y: 0
 ki_z: 0
 #-----
-kd_x: 30
-kd_y: 30
-kd_z: 50
+kd_x: 0.01
+kd_y: 0.01
+kd_z: 20
 #-----
 
 # rotational 

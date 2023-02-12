@@ -28,6 +28,8 @@ class CrazyflieParams:
     max_angle: float = 40*math.pi/180
     maxT:   float = 2.5*mass*g
     minT:   float = 0.05*mass*g
+    maxRT:  float = 2.5*mass*g
+    minRT:  float = -2.5*mass*g
 
     # matrix to compute individual rotor thrusts from U array
     A = np.array([[0.25,    0,     -0.5/L],

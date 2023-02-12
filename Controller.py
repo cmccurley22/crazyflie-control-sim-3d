@@ -61,6 +61,12 @@ class Controller3D():
 
             self.a_x = self.pid_gains["kp_x"] * e_pos_x + self.pid_gains["kd_x"] * e_vel_x
             self.a_y = self.pid_gains["kp_y"] * e_pos_y + self.pid_gains["kd_y"] * e_vel_y
+            
+            phi_d = (1 / self.params.g) * \
+                (self.a_x * sin(setpoint.psi) - self.a_y * cos(setpoint.psi))
+            theta_d = (1 / self.params.g) * \
+                (self.a_x * cos(setpoint.psi) + self.a_y * sin(setpoint.psi))
+            psi_d = setpoint.psi
 
         # rotational
         if calc_ptp:
@@ -69,11 +75,7 @@ class Controller3D():
             e_q = setpoint.q - state.q
             e_r = setpoint.r - state.r
 
-            phi_d = (1 / self.params.g) * \
-                (self.a_x * sin(setpoint.psi) - self.a_y * cos(setpoint.psi))
-            theta_d = (1 / self.params.g) * \
-                (self.a_x * cos(setpoint.psi) + self.a_y * sin(setpoint.psi))
-            psi_d = setpoint.psi
+            
 
             e_phi = phi_d - state.phi
             e_theta = theta_d - state.theta
@@ -91,6 +93,8 @@ class Controller3D():
             self.U[1] = U2
             self.U[2] = U3
             self.U[3] = U4
+            
+            print(self.U)
         
 
         self.last_psi = state.psi
