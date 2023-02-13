@@ -1,21 +1,21 @@
-# translational
-kp_x: 1.8
-kp_y: 1.8
-kp_z: 31
+# translational 
+kp_x: 2
+kp_y: 2
+kp_z: 5
 #-----
-ki_x: 0.0001
-ki_y: 0.0001
-ki_z: 0.3
+ki_x: 0
+ki_y: 0
+ki_z: 0
 #-----
-kd_x: 5
-kd_y: 5
-kd_z: 20
+kd_x: 3
+kd_y: 3
+kd_z: 8
 #-----
 
-# rotational
-kp_phi:   .00005
+# rotational 
+kp_phi: .00005
 kp_theta: .00005
-kp_psi:   .00015
+kp_psi: .00015
 #-----
 ki_phi: 0
 ki_theta: 0
