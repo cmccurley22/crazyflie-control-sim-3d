@@ -16,7 +16,7 @@ def run_sim(args, waypoints):
     sim_params = parse_args(args)
     show_simulation = sim_params.show_animation_flag
     loop_time = sim_params.loop_time
-    time_delta = 0.075
+    time_delta = 0.075 # originally 0.075
     curr_time = 0
     
     # print information on cmd line
@@ -56,6 +56,8 @@ def run_sim(args, waypoints):
     waypoint_idx = 0    # tracks what waypoint you are on
     num_wp_reached = 0  # tracks how many waypoints reached
 
+    U = np.array([0.,0.,0.,0.])
+    loop_num = 0
     # control loop
     while waypoint_idx < len(waypoints)-1:
         while curr_time < loop_time:
@@ -72,7 +74,15 @@ def run_sim(args, waypoints):
 
             # -------------- (THINK &) ACT -----------------------------------
             # compute thrust (i.e. u)
-            U = controller.compute_commands(set_point, state)
+            U = controller.compute_commands(set_point, state, time_delta)
+            # if loop_num == 0:
+                
+            #     U = controller.compute_commands(set_point, state)
+            # else:
+            #     U = controller.compute_commands(set_point, state, True, False, True)
+            # loop_num += 1
+            # if loop_num > 5:
+            #     loop_num = 0
             # ----------------------------------------------------------------
 
             # advance state using dynamics
