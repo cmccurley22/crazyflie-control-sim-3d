@@ -18,17 +18,21 @@ class Controller3D():
 
         self.params = cfparams
         self.pid_gains = pid_gains
-        self.last_psi = 0
+        
+        self.se_x = 0
+        self.se_y = 0
+        self.se_z = 0
         
         self.se_phi = 0
         self.se_theta = 0
         self.se_psi = 0
+        
         self.U = np.array([0.,0.,0.,0.])
         self.a_x = 0
         self.a_y = 0
 
 
-    def compute_commands(self, setpoint, state, calc_z=True, calc_xy=True, calc_ptp=True):
+    def compute_commands(self, setpoint, state, dt, calc_z=True, calc_xy=True, calc_ptp=True):
         """
         Inputs:
         - setpoint (TrajPoint dataclass):   the desired control setpoint
@@ -45,8 +49,9 @@ class Controller3D():
         if calc_z:
             e_pos_z = setpoint.z_pos - state.z_pos
             e_vel_z = setpoint.z_vel - state.z_vel
+            self.se_z += e_pos_z*dt
 
-            a_z = self.pid_gains["kp_z"] * e_pos_z + self.pid_gains["kd_z"] * e_vel_z
+            a_z = self.pid_gains["kp_z"] * e_pos_z + self.pid_gains["kd_z"] * e_vel_z + self.pid_gains["ki_z"]*self.se_z
 
             U1 = self.params.mass * (a_z + self.params.g)
             self.U[0] = U1
@@ -58,14 +63,23 @@ class Controller3D():
 
             e_pos_y = setpoint.y_pos - state.y_pos
             e_vel_y = setpoint.y_vel - state.y_vel
+            
+            self.se_x += e_pos_x*dt
+            self.se_y += e_pos_y*dt
 
-            self.a_x = self.pid_gains["kp_x"] * e_pos_x + self.pid_gains["kd_x"] * e_vel_x
-            self.a_y = self.pid_gains["kp_y"] * e_pos_y + self.pid_gains["kd_y"] * e_vel_y
+            self.a_x = self.pid_gains["kp_x"] * e_pos_x + self.pid_gains["kd_x"] * e_vel_x + self.pid_gains["ki_x"]*self.se_x
+            self.a_y = self.pid_gains["kp_y"] * e_pos_y + self.pid_gains["kd_y"] * e_vel_y + self.pid_gains["ki_y"]*self.se_y
+            
+            # phi_d = (1 / self.params.g) * \
+            #     (self.a_x * sin(setpoint.psi) - self.a_y * cos(setpoint.psi))
+            # theta_d = (1 / self.params.g) * \
+            #     (self.a_x * cos(setpoint.psi) + self.a_y * sin(setpoint.psi))
+            # psi_d = setpoint.psi
             
             phi_d = (1 / self.params.g) * \
-                (self.a_x * sin(setpoint.psi) - self.a_y * cos(setpoint.psi))
+                (self.a_x * sin(state.psi) - self.a_y * cos(state.psi))
             theta_d = (1 / self.params.g) * \
-                (self.a_x * cos(setpoint.psi) + self.a_y * sin(setpoint.psi))
+                (self.a_x * cos(state.psi) + self.a_y * sin(state.psi))
             psi_d = setpoint.psi
 
         # rotational
@@ -75,16 +89,24 @@ class Controller3D():
             e_q = setpoint.q - state.q
             e_r = setpoint.r - state.r
 
-            
+            # print(e_p, e_q, e_r)
 
             e_phi = phi_d - state.phi
             e_theta = theta_d - state.theta
             e_psi = psi_d - state.psi
-            
-            dt = 0.01
+
             self.se_phi += e_phi *dt
             self.se_theta += e_theta *dt
             self.se_psi += e_psi *dt
+            
+            # Reset error sums when trajectory point changes
+            if e_pos_x > 5.5 or e_pos_y > 5.5 or e_pos_z > 5.5:
+                self.se_phi = 0
+                self.se_theta = 0
+                self.se_psi = 0
+                self.se_x = 0
+                self.se_y = 0
+                
 
             U2 = self.pid_gains["kd_p"] * e_p + self.pid_gains["kp_phi"] * e_phi + self.pid_gains["ki_phi"]*self.se_phi
             U3 = self.pid_gains["kd_q"] * e_q + self.pid_gains["kp_theta"] * e_theta + self.pid_gains["ki_theta"]*self.se_theta
@@ -94,10 +116,12 @@ class Controller3D():
             self.U[2] = U3
             self.U[3] = U4
             
-            print(self.U)
+            # print(self.U)
         
 
-        self.last_psi = state.psi
+        # self.last_phi = state.phi
+        # self.last_theta = state.theta
+        # self.last_psi = state.psi
 
 
         return self.U

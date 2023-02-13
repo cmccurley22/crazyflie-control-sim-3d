@@ -16,7 +16,7 @@ def run_sim(args, waypoints):
     sim_params = parse_args(args)
     show_simulation = sim_params.show_animation_flag
     loop_time = sim_params.loop_time
-    time_delta = 0.05 # originally 0.075
+    time_delta = 0.075 # originally 0.075
     curr_time = 0
     
     # print information on cmd line
@@ -74,7 +74,7 @@ def run_sim(args, waypoints):
 
             # -------------- (THINK &) ACT -----------------------------------
             # compute thrust (i.e. u)
-            U = controller.compute_commands(set_point, state)
+            U = controller.compute_commands(set_point, state, time_delta)
             # if loop_num == 0:
                 
             #     U = controller.compute_commands(set_point, state)
